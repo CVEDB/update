@@ -1,21 +1,39 @@
-name: Update CVE list
+name: Security Database Sync and Analysis
 
 on:
   push:
     branches: [ master ]
-  pull_request:
-    branches: [ master ]
-  schedule:
-    - cron: "0 0 * * *"
-    
+
 jobs:
-  update-cve-list:
+  build:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Download allitems.csv
-        run: wget https://cve.mitre.org/data/downloads/allitems.csv
-      - name: Upload CSV artifact
-        uses: actions/upload-artifact@v2
-        with:
-          name: allitems.csv
-          path: allitems.csv
+    - uses: actions/checkout@v2
+
+    - name: Set up Python 3.x
+      uses: actions/setup-python@v1
+      with:
+        python-version: '3.x'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Sync Security Data
+      run: python sync_security_data.py
+
+    - name: Commit Security Data to Git
+      uses: EndBug/add-and-commit@v7.1
+      with:
+        author_name: GitHub Actions Bot
+        author_email: actions@github.com
+        message: 'Synced security data'
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Generate Report
+      run: python generate_report.py
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
