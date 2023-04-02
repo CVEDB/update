@@ -13,12 +13,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Download allitems.csv
-        run: curl -o allitems.csv https://cve.mitre.org/data/downloads/allitems.csv
+        run: wget https://cve.mitre.org/data/downloads/allitems.csv
       - name: Upload CSV artifact
         uses: actions/upload-artifact@v2
         with:
           name: allitems.csv
           path: allitems.csv
-      - name: Process CVE IDs
-        run: |
-          python process_cve_list.py ${{ github.workspace }}/allitems.csv
